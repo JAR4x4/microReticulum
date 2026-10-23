@@ -374,11 +374,11 @@ void Packet::pack() {
 				// CBA LINK
 				if (_object->_destination_link) {
 					_object->_ciphertext = _object->_destination_link.encrypt(_object->_data);
-TRACEF("***** Link data: %s", _object->_ciphertext.toHex().c_str());
+TRACEF("Link ciphertext length: %lu", _object->_ciphertext.size());
 				}
 				else {
 					_object->_ciphertext = _object->_destination.encrypt(_object->_data);
-TRACEF("***** Destination Data: %s", _object->_ciphertext.toHex().c_str());
+TRACEF("Destination ciphertext length: %lu", _object->_ciphertext.size());
 				}
 				// CBA RATCHET
 				/*p TODO

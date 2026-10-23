@@ -26,7 +26,7 @@ using namespace RNS;
 void Bytes::newData(size_t capacity /*= 0*/) {
 //MEMF("Bytes is creating own data with capacity %u", capacity);
 //MEM("newData: Creating new data...");
-	Data* data = new Data();
+	auto data = std::make_shared<Data>();
 	if (data == nullptr) {
 		ERROR("Bytes failed to allocate empty data buffer");
 		throw std::runtime_error("Failed to allocate empty data buffer");
@@ -38,7 +38,7 @@ void Bytes::newData(size_t capacity /*= 0*/) {
 //MEM("newData: Reserved data capacity");
 	}
 //MEM("newData: Assigning data to shared data pointer...");
-	_data = SharedData(data);
+	_data = std::move(data);
 //MEM("newData: Assigned data to shared data pointer");
 	_exclusive = true;
 }
@@ -57,7 +57,7 @@ void Bytes::exclusiveData(bool copy /*= true*/, size_t capacity /*= 0*/) {
 			//TRACE("Bytes is creating a writable copy of its shared data");
 			//Data* data = new Data(*_data.get());
 //MEM("exclusiveData: Creating new data...");
-			Data* data = new Data();
+			auto data = std::make_shared<Data>();
 			if (data == nullptr) {
 				ERROR("Bytes failed to duplicate data buffer");
 				throw std::runtime_error("Failed to duplicate data buffer");
@@ -76,7 +76,7 @@ void Bytes::exclusiveData(bool copy /*= true*/, size_t capacity /*= 0*/) {
 			data->insert(data->begin(), _data->begin(), _data->end());
 //MEM("exclusiveData: Copied existing data");
 //MEM("exclusiveData: Assigning data to shared data pointer...");
-			_data = SharedData(data);
+			_data = std::move(data);
 //MEM("exclusiveData: Assigned data to shared data pointer");
 			_exclusive = true;
 		}
@@ -87,7 +87,7 @@ void Bytes::exclusiveData(bool copy /*= true*/, size_t capacity /*= 0*/) {
 			//	ERROR("Bytes failed to allocate empty data buffer");
 			//	throw std::runtime_error("Failed to allocate empty data buffer");
 			//}
-			//_data = SharedData(data);
+			//_data = std::move(data);
 			//_exclusive = true;
 //MEM("exclusiveData: Creating new empty data...");
 			newData(capacity);
@@ -194,21 +194,17 @@ std::string RNS::hexFromByte(uint8_t byte, bool upper /*= true*/) {
 }
 
 std::string Bytes::toHex(bool upper /*= false*/) const {
-	if (!_data) {
-		return "";
-	}
-	std::string hex;
-	for (uint8_t byte : *_data) {
-		if (upper) {
-			hex += hex_upper_chars[ (byte&  0xF0) >> 4];
-			hex += hex_upper_chars[ (byte&  0x0F) >> 0];
-		}
-		else {
-			hex += hex_lower_chars[ (byte&  0xF0) >> 4];
-			hex += hex_lower_chars[ (byte&  0x0F) >> 0];
-		}
-	}
-	return hex;
+    if (!_data) return "";
+    std::string hex;
+    if (_data->size() > hex.max_size()/2) throw std::length_error("Hex string too large");
+    hex.resize(_data->size()*2);
+    const char* chars = upper ? hex_upper_chars : hex_lower_chars;
+    size_t i = 0;
+    for (uint8_t byte : *_data) {
+        hex[i++] = chars[byte >> 4];
+        hex[i++] = chars[byte & 0x0f];
+    }
+    return hex;
 }
 
 // mid

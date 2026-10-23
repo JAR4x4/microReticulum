@@ -789,8 +789,14 @@ be used if a new link to the same destination is established.
 void Link::teardown() {
 	assert(_object);
 	if (_object->_status != Type::Link::PENDING && _object->_status != Type::Link::CLOSED) {
-		Packet(*this, _object->_link_id).context(Type::Packet::LINKCLOSE).send();
-		had_outbound();
+		// Remote notification is best-effort; local closure must survive OOM.
+		try {
+			Packet(*this, _object->_link_id).context(Type::Packet::LINKCLOSE).send();
+			had_outbound();
+		}
+		catch (const std::exception&) {
+			// Avoid allocating diagnostic strings while already out of memory.
+		}
 	}
 	_object->_status = Type::Link::CLOSED;
 	if (_object->_initiator) {
@@ -824,15 +830,16 @@ void Link::teardown_packet(const Packet& packet) {
 
 void Link::link_closed() {
 	assert(_object);
-	// Snapshot the resource sets first — Resource::cancel() calls back into
-	// Link::cancel_outgoing_resource / cancel_incoming_resource which erase
-	// from the same set, invalidating the iterator on the live container.
-	std::vector<Resource> incoming(_object->_incoming_resources.begin(), _object->_incoming_resources.end());
-	std::vector<Resource> outgoing(_object->_outgoing_resources.begin(), _object->_outgoing_resources.end());
-	for (auto& resource : incoming) {
+	// Detach one wrapper at a time. Copying shared ownership needs no heap
+	// allocation, unlike snapshot vectors. Erase before callbacks mutate sets.
+	while (!_object->_incoming_resources.empty()) {
+		Resource resource = *_object->_incoming_resources.begin();
+		_object->_incoming_resources.erase(_object->_incoming_resources.begin());
 		resource.cancel();
 	}
-	for (auto& resource : outgoing) {
+	while (!_object->_outgoing_resources.empty()) {
+		Resource resource = *_object->_outgoing_resources.begin();
+		_object->_outgoing_resources.erase(_object->_outgoing_resources.begin());
 		resource.cancel();
 	}
 	if (_object->_channel) {
@@ -863,8 +870,37 @@ void Link::link_closed() {
 	}
 }
 
+// Cooperative link watchdog. Resource timeouts alone cannot retire a link
+// whose peer vanished without a successfully received LINKCLOSE packet.
+void Link::tick_lifecycle() {
+	assert(_object);
+	if (_object->_status == Type::Link::CLOSED || _object->_watchdog_lock) return;
+	const double now = OS::time();
+	if (_object->_status == Type::Link::PENDING || _object->_status == Type::Link::HANDSHAKE) {
+		if (now < _object->_request_time + _object->_establishment_timeout) return;
+	}
+	else {
+		const double inbound = std::max(std::max(_object->_last_inbound, _object->_last_proof), _object->_activated_at);
+		const double stale_at = inbound + _object->_stale_time;
+		const double expires_at = stale_at + _object->_rtt * _object->_keepalive_timeout_factor + Type::Link::STALE_GRACE;
+		if (now < expires_at) {
+			if (now >= stale_at) _object->_status = Type::Link::STALE;
+			if (_object->_initiator && now >= inbound + _object->_keepalive && now >= _object->_last_keepalive + _object->_keepalive) {
+				_object->_last_keepalive = now;
+				try { send_keepalive(); } catch (const std::exception&) {}
+			}
+			return;
+		}
+	}
+	// No remote packet is required for timeout cleanup under memory pressure.
+	_object->_status = Type::Link::CLOSED;
+	_object->_teardown_reason = Type::Link::TIMEOUT;
+	link_closed();
+}
+
 void Link::tick_resources() {
 	assert(_object);
+	tick_lifecycle();
 	if (_object->_status == Type::Link::CLOSED) return;
 
 	// Snapshot before pumping: Resource::__watchdog_job() can trigger
@@ -1020,10 +1056,13 @@ void Link::handle_request(const Bytes& request_id, const ResourceRequest& resour
 					else {
 						TRACE("handle_request: Sending response as resource");
 						// CBA TODO Determine why unused Resource is created here
-						Resource response_resource = Resource(packed_response, *this)
-							.request_id(request_id)
-							.is_response(true)
-							.start();
+						Resource response_resource(packed_response, *this);
+						// Resource retains the envelope through Bytes shared ownership.
+						// Do not pin both the callback reply and its envelope at the
+						// encryption/advertisement allocation peak.
+						response.clear();
+						packed_response.clear();
+						response_resource.request_id(request_id).is_response(true).start();
 					}
 				}
 			}
@@ -1148,6 +1187,10 @@ void Link::get_channel() {
 void Link::receive(const Packet& packet) {
 	assert(_object);
 	_object->_watchdog_lock = true;
+	struct ReceiveUnlock {
+		bool& flag;
+		~ReceiveUnlock() { flag = false; }
+	} receive_unlock{_object->_watchdog_lock};
 	if (_object->_status != Type::Link::CLOSED && !(_object->_initiator && packet.context() == Type::Packet::KEEPALIVE && packet.data() == "\xFF")) {
 		if (packet.receiving_interface() != _object->_attached_interface) {
 			ERROR("Link-associated packet received on unexpected interface! Someone might be trying to manipulate your communication!");
@@ -1692,18 +1735,12 @@ void Link::cancel_outgoing_resource(const Resource& resource) {
 	if (_object->_outgoing_resources.count(resource) > 0) {
 		_object->_outgoing_resources.erase(resource);
 	}
-	else {
-		ERROR("Attempt to cancel a non-existing outgoing resource");
-	}
 }
 
 void Link::cancel_incoming_resource(const Resource& resource) {
 	assert(_object);
 	if (_object->_incoming_resources.count(resource)) {
 		_object->_incoming_resources.erase(resource);
-	}
-	else {
-		ERROR("Attempt to cancel a non-existing incoming resource");
 	}
 }
 

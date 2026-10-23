@@ -297,6 +297,10 @@ const Resource& Resource::start() {
 		_object->_original_hash = _object->_hash;
 	}
 
+	// Hash inputs are no longer needed; release before the encryption peak.
+	hash_input.clear();
+	data.clear();
+
 	// Resources encrypt their payload themselves so each chunk sits in
 	// the cipher stream contiguously (Python Resource.py:423-428).
 	Bytes encrypted = _object->_link.encrypt(payload);
@@ -304,6 +308,7 @@ const Resource& Resource::start() {
 	_object->_size       = encrypted.size();
 
 	_object->_uncompressed_data = {Bytes::NONE};
+	payload.clear();
 
 	// Slice the encrypted stream into SDU-sized parts and compute the
 	// hashmap. Mirror Python Resource.py:432-473 — minus the collision
@@ -333,6 +338,9 @@ const Resource& Resource::start() {
 		_object->_parts.push_back(part);
 	}
 
+	// Parts own their payload and packed buffers; release the source ciphertext
+	// before constructing and encrypting the resource advertisement.
+	encrypted.clear();
 	this->advertise();
 	return *this;
 }
@@ -454,6 +462,10 @@ void Resource::advertise_job() {
 	try {
 		TRACE("Resource::advertise_job: Sending resource advertisement packet");
 		_object->_advertisement_packet.send();
+		if (!_object->_advertisement_packet.sent()) {
+			cancel();
+			return;
+		}
 		_object->_last_activity        = Utilities::OS::time();
 		_object->_started_transferring = _object->_last_activity;
 		_object->_adv_sent             = _object->_last_activity;
@@ -547,6 +559,10 @@ void Resource::__watchdog_job() {
 				ResourceAdvertisement adv(*this, _object->_request_id, _object->_is_response);
 				_object->_advertisement_packet = Packet(_object->_link, adv.pack()).context(Type::Packet::RESOURCE_ADV);
 				_object->_advertisement_packet.send();
+				if (!_object->_advertisement_packet.sent()) {
+					cancel();
+					return;
+				}
 				_object->_last_activity = Utilities::OS::time();
 				_object->_adv_sent      = _object->_last_activity;
 			}
@@ -1229,6 +1245,11 @@ void Resource::cancel() {
 	if (_object->_status >= Type::Resource::COMPLETE) return;
 
 	_object->_status = Type::Resource::FAILED;
+	// Release the link's owning reference before any fallible radio work.
+	// Keep this wrapper alive while erasing the set node (no allocation).
+	Resource keep_alive = *this;
+	if (_object->_initiator) _object->_link.cancel_outgoing_resource(*this);
+	else _object->_link.cancel_incoming_resource(*this);
 	if (_object->_initiator) {
 		if (_object->_link.status() == Type::Link::ACTIVE) {
 			try {
@@ -1236,14 +1257,11 @@ void Resource::cancel() {
 				Packet cancel_packet = Packet(_object->_link, _object->_hash).context(Type::Packet::RESOURCE_ICL);
 				cancel_packet.send();
 			}
-			catch (const std::exception& e) {
-				ERRORF("Could not send resource cancel packet, the contained exception was: %s", e.what());
+			catch (const std::exception&) {
+				// Cancellation is best-effort. Logging here may allocate and
+				// throw again under OOM, interrupting the remaining cleanup.
 			}
 		}
-		_object->_link.cancel_outgoing_resource(*this);
-	}
-	else {
-		_object->_link.cancel_incoming_resource(*this);
 	}
 
 	if (_object->_callbacks._concluded != nullptr) {

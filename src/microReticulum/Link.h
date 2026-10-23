@@ -219,6 +219,7 @@ namespace RNS {
 		// resource cancelling mid-tick (which would erase from the set)
 		// doesn't dangle the iterator or *this.
 		void tick_resources();
+		void tick_lifecycle();
 		void send_keepalive();
 		void handle_request(const Bytes& request_id, const ResourceRequest& unpacked_request);
 		void handle_response(const Bytes& request_id, const Bytes& response_data, size_t response_size, size_t response_transfer_size);
