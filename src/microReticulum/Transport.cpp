@@ -3208,6 +3208,14 @@ TRACEF("path_announce_emitted=%lu", path_announce_emitted);
 	}
 }
 
+/*static*/ bool Transport::response_resources_busy() {
+	// Do not snapshot the set: admission must also work with no heap headroom.
+	for (const Link& link : _active_links) {
+		if (link.status() != Type::Link::CLOSED && link.has_outgoing_response()) return true;
+	}
+	return false;
+}
+
 /*static*/ void Transport::register_link(Link& link) {
 	TRACEF("Transport: Registering link %s", link.toString().c_str());
 	if (link.initiator()) {

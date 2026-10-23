@@ -20,6 +20,16 @@
 #include <math.h>
 #include <limits>
 
+// Constrained cooperative nodes cannot safely prepare overlapping responses.
+// No queue or custom wire reply is introduced: overloaded clients must retry.
+#ifndef RNS_SERIALIZE_RESPONSE_RESOURCES
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_NRF52_ADAFRUIT)
+#define RNS_SERIALIZE_RESPONSE_RESOURCES 1
+#else
+#define RNS_SERIALIZE_RESPONSE_RESOURCES 0
+#endif
+#endif
+
 // [[deprecated(msg)]] requires C++14. Fall back to GCC/Clang's attribute
 // syntax under C++11 so the native (gnu++11) build still compiles. Defined
 // identically in Resource.h; duplicate here to avoid creating a dependency

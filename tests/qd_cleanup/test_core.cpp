@@ -72,7 +72,64 @@ static void transfer_timeout(bool sender,Type::Resource::status state){
  assert(l._object->_outgoing_resources.empty()&&l._object->_incoming_resources.empty());
  r=Resource(Type::NONE);assert(w.expired());l.teardown();
 }
+static int callback_calls=0;
+static bool throw_in_generator=false;
+static Link* reenter_link=nullptr;
+static int concluded_calls=0;
+static void concluded(const Resource& r){assert(r.status()==Type::Resource::FAILED);++concluded_calls;}
+static Bytes page_generator(const Bytes&,const Bytes&,const Bytes&,const Bytes&,const Identity&,double){
+ ++callback_calls;if(throw_in_generator)throw std::bad_alloc();
+ if(reenter_link){auto l=reenter_link;reenter_link=nullptr;ResourceRequest rq;rq._path_hash=hex("aabb");l->handle_request(Bytes("nested request"),rq);}unsigned char data[522];data[0]=0xda;data[1]=2;data[2]=7;for(int i=3;i<522;++i)data[i]='x';return Bytes(data,sizeof(data));
+}
+static void setup_handler(Link& l){
+ Destination d(Type::NONE);d._object=std::make_shared<Destination::Object>(Identity(Type::NONE));
+ d._object->_type=Type::Destination::SINGLE;d._object->_direction=Type::Destination::IN;
+ d._object->_request_handlers.emplace(hex("aabb"),RequestHandler(Bytes("/page/index.mu"),page_generator,Type::Destination::ALLOW_ALL,std::initializer_list<Bytes>{}));
+ l._object->_destination=d;
+}
+static void busy_request_regression(){
+ auto l=link_fixture();setup_handler(l);auto active=resource_fixture(l,true);active._object->_is_response=true;
+ ResourceRequest req;req._path_hash=hex("aabb");Bytes id=hex("00112233445566778899aabbccddeeff");callback_calls=0;
+ l.handle_request(id,req);
+#if RNS_SERIALIZE_RESPONSE_RESOURCES
+ assert(callback_calls==0);
+ const auto before=live_bytes;countdown=0;
+ for(int i=0;i<1000;++i)l.handle_request(id,req);
+ countdown=-1;assert(callback_calls==0&&live_bytes==before);
+#else
+ assert(callback_calls==1);
+#endif
+ active.cancel();l.handle_request(id,req);assert(callback_calls>0);l.teardown();
+}
+static void cross_link_and_exception_regression(){
+#if RNS_SERIALIZE_RESPONSE_RESOURCES
+ auto first=link_fixture(),second=link_fixture();setup_handler(second);
+ auto active=resource_fixture(first,true);active._object->_is_response=true;
+ Transport::_active_links.insert(first);Transport::_active_links.insert(second);
+ ResourceRequest req;req._path_hash=hex("aabb");Bytes id=hex("00112233445566778899aabbccddeeff");callback_calls=0;
+ const auto before=live_bytes;countdown=0;
+ for(int i=0;i<1000;++i)second.handle_request(id,req);
+ countdown=-1;assert(callback_calls==0&&live_bytes==before);
+ // The lower-level API must not prepare or leave an untracked QUEUED resource.
+ Resource direct(Bytes("already supplied payload"),second);direct.is_response(true).set_callback(concluded);concluded_calls=0;std::weak_ptr<ResourceData>w=direct._object;
+ countdown=0;direct.start();countdown=-1;assert(direct.status()==Type::Resource::FAILED&&direct.data().size()==0&&concluded_calls==1);
+ direct.start();assert(concluded_calls==1);
+ direct=Resource(Type::NONE);assert(w.expired());
+ active.cancel();throw_in_generator=true;
+ try{second.handle_request(id,req);assert(false);}catch(const std::bad_alloc&){}
+ throw_in_generator=false;assert(callback_calls==1);
+ second.handle_request(id,req);assert(callback_calls==2);
+ setup_handler(first);reenter_link=&first;second.handle_request(id,req);assert(callback_calls==3&&reenter_link==nullptr);
+ Transport::_active_links.clear();first.teardown();second.teardown();
+#endif
+}
 int main(){
+ busy_request_regression();cross_link_and_exception_regression();
+#if RNS_SERIALIZE_RESPONSE_RESOURCES
+ puts("PASS: busy-link and cross-link admission, 2000 rejected requests with no new heap allocation, resource rejection cleanup/callback once, reentrant generation and exception recovery");
+#else
+ puts("PASS: response admission opt-out retains legacy overlap behavior");
+#endif
  cancel_no_heap(true);cancel_no_heap(false);close_no_heap();timeout_no_heap();wire_close_and_receive_failure();
  transfer_timeout(true,Type::Resource::ADVERTISED);transfer_timeout(true,Type::Resource::TRANSFERRING);transfer_timeout(true,Type::Resource::AWAITING_PROOF);transfer_timeout(false,Type::Resource::TRANSFERRING);
  auto baseline=live_bytes;

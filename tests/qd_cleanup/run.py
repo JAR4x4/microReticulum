@@ -6,8 +6,10 @@ ap=argparse.ArgumentParser()
 ap.add_argument('--build-dir',required=True,type=Path)
 ap.add_argument('--deps-dir',type=Path,help='Optional existing PlatformIO libdeps directory')
 ap.add_argument('--no-sanitize',action='store_true')
+ap.add_argument('--allow-overlap',action='store_true',help='Verify legacy opt-out without serialized responses')
 a=ap.parse_args();root=Path(__file__).resolve().parents[2];build=a.build_dir.resolve()
-flags='-DMSGPACK_DEBUGLOG_ENABLE=0 -DRNS_LOG_LEVEL=8 -DRNS_DEFAULT_ALLOCATOR=0 -DRNS_CONTAINER_ALLOCATOR=0'
+flags='-DMSGPACK_DEBUGLOG_ENABLE=0 -DRNS_LOG_LEVEL=8 -DRNS_DEFAULT_ALLOCATOR=0 -DRNS_CONTAINER_ALLOCATOR=0 -DRNS_SERIALIZE_RESPONSE_RESOURCES=1'
+flags=flags.replace('RNS_SERIALIZE_RESPONSE_RESOURCES=1','RNS_SERIALIZE_RESPONSE_RESOURCES='+('0' if a.allow_overlap else '1'))
 args=['cmake','-S',str(root),'-B',str(build),'-DCMAKE_BUILD_TYPE=Debug','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON']
 for name in ['TESTS','EXAMPLES','INTEROP']:args.append('-DRNS_BUILD_'+name+'=OFF')
 for name in ['USE_FS','USE_PROVISIONING','PERSIST_PATHS','PERSIST_KNOWN_DESTINATIONS','PERSIST_HASHLIST']:args.append('-DRNS_'+name+'=OFF')

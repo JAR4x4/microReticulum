@@ -257,6 +257,19 @@ call.
 */
 const Resource& Resource::start() {
 	assert(_object);
+#if RNS_SERIALIZE_RESPONSE_RESOURCES
+	if (_object->_initiator && _object->_status >= Type::Resource::ADVERTISED &&
+		_object->_status < Type::Resource::COMPLETE) return *this;
+	// The old QUEUED path was reached only after expensive part preparation,
+	// and the resource was not registered for ticking. Reject before that peak.
+	if (!_object->_link.ready_for_new_resource() ||
+		(_object->_is_response && Transport::response_resources_busy())) {
+		_object->_initiator = true;
+		_object->_data.clear();
+		cancel(false);
+		return *this;
+	}
+#endif
 	if (!_object->_data || _object->_data.size() == 0) {
 		DEBUG("Resource::start() called with empty payload; nothing to do");
 		return *this;
@@ -1228,11 +1241,11 @@ void Resource::request(const Bytes& request_data) {
 /*
 Cancels transferring the resource. Mirror Python Resource.py:1075.
 */
-void Resource::cancel() {
+void Resource::cancel(bool notify_peer) {
 	assert(_object);
 
 	if (_object->_next_segment) {
-		_object->_next_segment.cancel();
+		_object->_next_segment.cancel(notify_peer);
 	}
 
 	if (_object->_status == Type::Resource::CORRUPT) {
@@ -1251,7 +1264,7 @@ void Resource::cancel() {
 	if (_object->_initiator) _object->_link.cancel_outgoing_resource(*this);
 	else _object->_link.cancel_incoming_resource(*this);
 	if (_object->_initiator) {
-		if (_object->_link.status() == Type::Link::ACTIVE) {
+		if (notify_peer && _object->_link.status() == Type::Link::ACTIVE) {
 			try {
 				TRACE("Resource::cancel: Sending resource cancel packet");
 				Packet cancel_packet = Packet(_object->_link, _object->_hash).context(Type::Packet::RESOURCE_ICL);

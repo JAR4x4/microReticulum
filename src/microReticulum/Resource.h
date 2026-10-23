@@ -114,7 +114,8 @@ namespace RNS {
 		void receive_part(const Packet& packet);
 		void request_next();
 		void request(const Bytes& request_data);
-		void cancel();
+		// notify_peer=false is for local rejection before an advertisement exists.
+		void cancel(bool notify_peer = true);
 		void rejected();
 
 		// Initiator-side kickoff: encrypt the payload, slice it into parts,

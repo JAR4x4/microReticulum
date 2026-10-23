@@ -367,6 +367,8 @@ namespace RNS {
 		inline static const InterfaceTable& get_interfaces() { return _interfaces; }
 		static void register_destination(Destination& destination);
 		static void deregister_destination(const Destination& destination);
+		// Allocation-free scan used by constrained response admission.
+		static bool response_resources_busy();
 		static void register_link(Link& link);
 		static void activate_link(Link& link);
 		static void register_announce_handler(HAnnounceHandler handler);

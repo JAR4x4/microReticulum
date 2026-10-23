@@ -246,6 +246,7 @@ namespace RNS {
 		void cancel_outgoing_resource(const Resource& resource);
 		void cancel_incoming_resource(const Resource& resource);
 		bool ready_for_new_resource();
+		bool has_outgoing_response() const;
 
 		//void __str__();
 		std::string toString() const;

@@ -41,6 +41,14 @@ using namespace RNS::Cryptography;
 using namespace RNS::Utilities;
 
 namespace {
+#if RNS_SERIALIZE_RESPONSE_RESOURCES
+bool response_generation_in_progress = false;
+struct ResponseGenerationGuard {
+	ResponseGenerationGuard() { response_generation_in_progress = true; }
+	~ResponseGenerationGuard() { response_generation_in_progress = false; }
+};
+#endif
+
 
 // Outer-envelope splice helpers. Python Reticulum recursively encodes the
 // user payload into the outer msgpack array (umsgpack.packb([...])). In
@@ -1006,6 +1014,13 @@ void Link::send_keepalive() {
 
 void Link::handle_request(const Bytes& request_id, const ResourceRequest& resource_request) {
 	assert(_object);
+#if RNS_SERIALIZE_RESPONSE_RESOURCES
+	// Check before handler copies, callback generation, encryption or logging
+	// can allocate another response while an existing transfer owns buffers.
+	if (_object->_status != Type::Link::ACTIVE || response_generation_in_progress ||
+		!ready_for_new_resource() || Transport::response_resources_busy()) return;
+	ResponseGenerationGuard generation_guard;
+#endif
 	DEBUGF("Link %s handling request", link_id().toHex().c_str());
 	if (_object->_status == Type::Link::ACTIVE) {
 		//p requested_at = unpacked_request[0]
@@ -1742,6 +1757,14 @@ void Link::cancel_incoming_resource(const Resource& resource) {
 	if (_object->_incoming_resources.count(resource)) {
 		_object->_incoming_resources.erase(resource);
 	}
+}
+
+bool Link::has_outgoing_response() const {
+	assert(_object);
+	for (const Resource& resource : _object->_outgoing_resources) {
+		if (resource.is_response() && resource.status() < Type::Resource::COMPLETE) return true;
+	}
+	return false;
 }
 
 bool Link::ready_for_new_resource() {
