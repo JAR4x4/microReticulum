@@ -311,6 +311,8 @@ void tlsf_mem_walker(void* ptr, size_t size, int used, void* user)
 	TRACEF("  alloc_fault:  %u", allocator_info.alloc_fault);
 	TRACEF("  free_count:   %u", allocator_info.free_count);
 	TRACEF("  free_fault:   %u", allocator_info.free_fault);
+	TRACEF("  failed_count: %u", allocator_info.failed_count);
+	TRACEF("  last_failed_size: %u", allocator_info.last_failed_size);
 }
 
 /*static*/ void Memory::dump_basic_allocator_stats() {
@@ -483,16 +485,8 @@ size_t maxContiguousAllocation() {
 
 void* allocator_malloc(size_t size) {
 	if (size == 0) return nullptr;
-	++Memory::default_allocator_info.alloc_count;
-	Memory::default_allocator_info.alloc_size += size;
-	if (size < Memory::default_allocator_info.min_alloc_size || Memory::default_allocator_info.min_alloc_size == 0) {
-		Memory::default_allocator_info.min_alloc_size = size;
-	}
-	if (size > Memory::default_allocator_info.max_alloc_size) {
-		Memory::default_allocator_info.max_alloc_size = size;
-	}
 #if RNS_DEFAULT_ALLOCATOR == RNS_HEAP_POOL_ALLOCATOR
-	return Memory::pool_malloc(Memory::heap_pool_info, size);
+	void* p = Memory::pool_malloc(Memory::heap_pool_info, size);
 #elif RNS_DEFAULT_ALLOCATOR == RNS_PSRAM_ALLOCATOR
 #if BOARD_HAS_PSRAM != 1
 	#error "BOARD_HAS_PSRAM must be defined to use RNS_PSRAM_POOL_ALLOCATOR allocator."
@@ -504,20 +498,34 @@ void* allocator_malloc(size_t size) {
 		++Memory::default_allocator_info.alloc_fault;
 		p = malloc(size);
 	}
-	return p;
+
 #elif RNS_DEFAULT_ALLOCATOR == RNS_PSRAM_POOL_ALLOCATOR
 #error "RNS_DEFAULT_ALLOCATOR can not be set to RNS_PSRAM_POOL_ALLOCATOR because PSRAM isn't initialized early enough."
 #if BOARD_HAS_PSRAM != 1
 	#error "BOARD_HAS_PSRAM must be defined to use RNS_PSRAM_POOL_ALLOCATOR allocator."
 #endif
-	return Memory::pool_malloc(Memory::psram_pool_info, size);
+	void* p = Memory::pool_malloc(Memory::psram_pool_info, size);
 #elif RNS_DEFAULT_ALLOCATOR == RNS_ALTHEAP_POOL_ALLOCATOR
-	return Memory::pool_malloc(Memory::altheap_pool_info, size);
+	void* p = Memory::pool_malloc(Memory::altheap_pool_info, size);
 #elif RNS_DEFAULT_ALLOCATOR == RNS_HEAP_ALLOCATOR
-	return ::operator new(n * sizeof(value_type));
+	void* p = malloc(size);
 #else
 	#error "Unknown or invalid allocator."
 #endif
+	if (!p) {
+		++Memory::default_allocator_info.failed_count;
+		Memory::default_allocator_info.last_failed_size = size;
+		return nullptr;
+	}
+	++Memory::default_allocator_info.alloc_count;
+	Memory::default_allocator_info.alloc_size += size;
+	if (size < Memory::default_allocator_info.min_alloc_size || Memory::default_allocator_info.min_alloc_size == 0) {
+		Memory::default_allocator_info.min_alloc_size = size;
+	}
+	if (size > Memory::default_allocator_info.max_alloc_size) {
+		Memory::default_allocator_info.max_alloc_size = size;
+	}
+	return p;
 }
 
 void allocator_free(void* p, size_t size = 0) noexcept {
