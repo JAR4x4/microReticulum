@@ -39,3 +39,9 @@ For library regression run its existing tests/qd_cleanup/run.py with --build-dir
 Builds emit existing warnings, including deprecated ArduinoJson usage, unused variables/flags and a Crypto RNG hardware-source warning in the Arduino RNode build. They did not prevent compilation. This review is not an audit of runtime entropy or a resolution of the existing device-computed QD firmware-hash discrepancy.
 
 Detailed logs and results are retained locally under firmware/evidence/build-verification-2026-10-24/. Scratch build output under /tmp is not a stable release package and does not replace artifacts/.
+
+## Historical profiles archived after build verification
+
+On24October2026,11 historical local Transport Node profiles and microReticulum native-local were moved verbatim to archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in their respective repositories. They are not loaded automatically. All remaining effective PlatformIO sections compared identical before/after (35 named Transport Node environments and14 library environments remain). The stable QD target, dependency pin and RNode Arduino build are unchanged. Restore instructions and verification records accompany the archived sections. Firmware source files and installed-version tags were not modified. The earlier46-environment matrix records the pre-archive inventory; archived rows are now explicitly marked.
+
+Isolated verification source/build folders under /tmp/umbra-build-verification-20261024 were deleted after checking that complete build/test logs were retained in firmware/evidence/build-verification-2026-10-24/. Deleted scratch-file hashes are recorded there. Approx184057517logical bytes were removed. Stable artifacts/ packages remain unchanged. No flash, restart or new radio test was performed.

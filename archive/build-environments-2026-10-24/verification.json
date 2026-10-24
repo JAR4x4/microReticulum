@@ -1,0 +1,9 @@
+{
+  "repo": "microReticulum",
+  "archived": [
+    "env:native-local"
+  ],
+  "remaining_named_environments": 14,
+  "remaining_effective_configs_identical": true,
+  "archive_sha256": "e87d4f6018e5c1d3bec81a9525274a400d103ec808e8717263cc43060e56cf22"
+}

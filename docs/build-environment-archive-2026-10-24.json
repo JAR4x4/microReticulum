@@ -1,0 +1,30 @@
+[
+  {
+    "repo": "UMBRA_Transport_Node",
+    "archived": [
+      "env:ttgo-t-beam-local",
+      "env:ttgo-lora32-v21-local",
+      "env:ttgo-lora32-v21-sd-local",
+      "env:heltec_wifi_lora_32_V4-local",
+      "env:heltec_wifi_lora_32_V4-local-psram",
+      "env:heltec_wifi_lora_32_V4-local-psram-pioarduino",
+      "env:wiscore_rak4631-local",
+      "env:wiscore_rak3401-local",
+      "env:lilygo-t-echo-local",
+      "env:heltec_t114-local",
+      "env:native-macos-local"
+    ],
+    "remaining_named_environments": 35,
+    "remaining_effective_configs_identical": true,
+    "archive_sha256": "0f7453bbc09074dd8f374adad65123d304c80c8649694a76dfe90134b75d9c7d"
+  },
+  {
+    "repo": "microReticulum",
+    "archived": [
+      "env:native-local"
+    ],
+    "remaining_named_environments": 14,
+    "remaining_effective_configs_identical": true,
+    "archive_sha256": "e87d4f6018e5c1d3bec81a9525274a400d103ec808e8717263cc43060e56cf22"
+  }
+]

@@ -161,49 +161,49 @@
   },
   {
     "environment": "ttgo-t-beam-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "ttgo-lora32-v21-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "ttgo-lora32-v21-sd-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "heltec_wifi_lora_32_V4-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "heltec_wifi_lora_32_V4-local-psram",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "heltec_wifi_lora_32_V4-local-psram-pioarduino",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "wiscore_rak4631-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore",
       "/home/jar/UMBRAreticulum/firmware/Adafruit_SPIFlash"
@@ -211,7 +211,7 @@
   },
   {
     "environment": "wiscore_rak3401-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore",
       "/home/jar/UMBRAreticulum/firmware/Adafruit_SPIFlash"
@@ -219,21 +219,21 @@
   },
   {
     "environment": "lilygo-t-echo-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "heltec_t114-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]
   },
   {
     "environment": "native-macos-local",
-    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "status": "ARCHIVED: archive/build-environments-2026-10-24/platformio-legacy.ini.disabled in Transport Node; not auto-loaded",
     "missing_local_dependencies": [
       "/home/jar/UMBRAreticulum/firmware/microStore"
     ]

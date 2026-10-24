@@ -1,0 +1,14 @@
+; Archived local development profiles, 2026-10-24. Not auto-loaded.
+; Restore by copying required blocks into root platformio.ini; review dependencies first.
+
+[env:native-local]
+platform = native
+build_flags =
+	${env.build_flags}
+	-DNATIVE
+lib_deps =
+	${env.lib_deps}
+	microStore=symlink://../microStore
+; Following required to force-include libraries that are marked arduino-only
+lib_compat_mode = off
+
