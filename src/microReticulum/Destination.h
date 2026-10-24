@@ -85,6 +85,7 @@ namespace RNS {
 	 * @param aspects Any non-zero number of string arguments.
 	 */
 	class Destination {
+		friend struct DestinationAdmissionTestAccess;
 
 	public:
 		class Callbacks {
@@ -160,6 +161,15 @@ namespace RNS {
 		*/
 		inline void accepts_links(bool accepts) { assert(_object); _object->_accept_link_requests = accepts; }
 		inline bool accepts_links() { assert(_object); return _object->_accept_link_requests; }
+		// Zero preserves the default unrestricted policy. Counts handshaking,
+		// active/stale incoming links and in-progress admissions, excluding CLOSED links.
+		void incoming_link_limit(size_t limit);
+		size_t incoming_link_limit() const;
+		size_t incoming_link_count() const;
+		bool can_accept_incoming_link() const;
+		bool defer_incoming_link_request();
+		uint32_t incoming_link_rejections() const;
+
 
 		/*
 			Registers a function to be called when a link has been established to
@@ -246,11 +256,15 @@ namespace RNS {
 
 	private:
 		class Object {
+			friend struct DestinationAdmissionTestAccess;
 		public:
 			Object(const Identity& identity) : _identity(identity) { MEMF("Destination::Data object created, this: %p", (void*)this); }
 			virtual ~Object() { MEMF("Destination::Data object destroyed, this: %p", (void*)this); }
 		private:
 			bool _accept_link_requests = true;
+			size_t _incoming_link_limit = 0;
+			size_t _incoming_link_reservations = 0;
+			uint32_t _incoming_link_rejections = 0;
 			Callbacks _callbacks;
 			std::map<Bytes, RequestHandler> _request_handlers;
 			Type::Destination::types _type;

@@ -1845,6 +1845,16 @@ TRACEF("path_request_conditions=%u", path_request_conditions);
 	if (accept) {
 		TRACE("Transport::inbound: Packet accepted by filter");
 
+		// Capacity refusal is temporary: do not poison duplicate filtering
+		// with an LR that should be allowed to retry after capacity recovers.
+		if (packet.packet_type() == Type::Packet::LINKREQUEST &&
+			(!packet.transport_id() || packet.transport_id() == _identity.hash())) {
+			auto local = _destinations.find(packet.destination_hash());
+			if (local != _destinations.end() && local->second.type() == packet.destination_type() &&
+				local->second.defer_incoming_link_request()) return;
+		}
+
+
 		// Defer hashlist insertion for packets belonging to links in
 		// our link table, and for LRPROOF packets. On shared-medium
 		// interfaces (e.g. LoRa), a packet may arrive on the "wrong"
