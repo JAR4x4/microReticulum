@@ -31,7 +31,8 @@ Destination gains an optional incoming_link_limit, default0(unrestricted).
 A bounded destination rejects additional incoming handshakes before LinkData,
 key exchange or proof generation. Counting includes PENDING/ACTIVE/STALE links
 and admissions currently in progress, excludes CLOSED links, and does not copy
-collections. A scoped reservation covers synchronous loop re-entry during radio
+collections. Transport refuses full-destination LINKREQUESTs before duplicate-hash
+insertion, so the same handshake can retry after capacity returns. A scoped reservation covers synchronous loop re-entry during radio
 waits and restores capacity on exceptions/early returns. Rejections allocate
 nothing and are counted by incoming_link_rejections. They are not queued.
 
@@ -54,7 +55,8 @@ availability tradeoff and not score a rejected request as delivered.
 ## Tests and deployment
 
 AddressSanitizer native test covers default-unlimited policy, per-destination
-isolation, pending/stale counting, exact boundary, capacity recovery after CLOSED
+isolation, actual Transport retry hashes not cached on full admission, pending/stale
+counting, exact boundary, capacity recovery after CLOSED
 or removal, accepts_links(false),1001repeated allocation-free rejected/nested
 attempts, exception-safe reservation release, and prior allocator/cleanup tests.
 Synthetic LinkData records are used to exercise ownership states without radio

@@ -444,6 +444,14 @@ bool Destination::can_accept_incoming_link() const {
 	return _object->_accept_link_requests &&
 		(_object->_incoming_link_limit == 0 || incoming_link_count() < _object->_incoming_link_limit);
 }
+bool Destination::defer_incoming_link_request() {
+	assert(_object);
+	if (_object->_accept_link_requests && !can_accept_incoming_link()) {
+		++_object->_incoming_link_rejections;
+		return true;
+	}
+	return false;
+}
 uint32_t Destination::incoming_link_rejections() const {
 	assert(_object); return _object->_incoming_link_rejections;
 }
@@ -453,10 +461,7 @@ void Destination::incoming_link_request(const Bytes& data, const Packet& packet)
 	if (_object->_accept_link_requests) {
 		// Reject before key exchange, LinkData construction or proof generation.
 		// No queue, snapshots, payload copies or formatting allocations here.
-		if (!can_accept_incoming_link()) {
-			++_object->_incoming_link_rejections;
-			return;
-		}
+		if (defer_incoming_link_request()) return;
 		// Radio waits can re-enter loop(); reserve capacity before validation.
 		Utilities::ScopedCounter reservation(_object->_incoming_link_reservations);
 TRACE("***** Accepting link request");

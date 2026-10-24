@@ -167,6 +167,7 @@ namespace RNS {
 		size_t incoming_link_limit() const;
 		size_t incoming_link_count() const;
 		bool can_accept_incoming_link() const;
+		bool defer_incoming_link_request();
 		uint32_t incoming_link_rejections() const;
 
 

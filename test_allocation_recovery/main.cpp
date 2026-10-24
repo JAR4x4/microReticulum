@@ -12,6 +12,7 @@ struct DestinationAdmissionTestAccess {
  static void clear(Destination& d) { d._object->_links.clear(); }
 };
 struct TransportTestAccess {
+ static bool seen(const Bytes& hash) { return Transport::_packet_hashlist.exists(hash); }
  static bool locked() { return Transport::_jobs_locked; }
  static void identity() { Transport::_identity = Identity(); }
  static size_t tags() { return Transport::_discovery_pr_tags.size(); }
@@ -62,6 +63,15 @@ static void test_destination_admission() {
  for(int i=0;i<1000;++i) site.incoming_link_request(empty,unused);
  assert(fail_after==0); fail_after=-1;
  assert(site.incoming_link_rejections()==1000);
+ // Real Transport must refuse before recording a duplicate hash, so the
+ // same LR can retry once capacity recovers.
+ std::vector<uint8_t> lr(83,0); lr[0]=0x02;
+ std::copy(site.hash().data(),site.hash().data()+16,lr.begin()+2);
+ Bytes lr_raw(lr); Packet lr_packet(lr_raw); assert(lr_packet.unpack());
+ DummyInterface* impl = new DummyInterface(); Interface radio(impl);
+ Transport::inbound(lr_raw,radio); Transport::inbound(lr_raw,radio);
+ assert(!TransportTestAccess::seen(lr_packet.packet_hash()));
+ assert(site.incoming_link_rejections()==1002);
  assert(site.incoming_link_count()==2);
  pending.status(Type::Link::STALE);
  assert(!site.can_accept_incoming_link());
@@ -78,11 +88,11 @@ static void test_destination_admission() {
   throw std::bad_alloc();
  } catch(const std::bad_alloc&) {}
  assert(site.incoming_link_count()==0 && site.can_accept_incoming_link());
- assert(site.incoming_link_rejections()==1001);
+ assert(site.incoming_link_rejections()==1003);
  site.accepts_links(false); assert(!site.can_accept_incoming_link());
  site.accepts_links(true); site.incoming_link_limit(0); assert(site.can_accept_incoming_link());
  DestinationAdmissionTestAccess::clear(site);
- std::puts("PASS: bounded destination links, pending/stale counting, slot recovery, management isolation,1001 allocation-free rejections and exception-safe reservations");
+ std::puts("PASS: bounded destination links, pending/stale counting, slot recovery, management isolation,1001 allocation-free rejections, retry-safe Transport admission and exception-safe reservations");
 }
 int main() {
  using namespace RNS;
