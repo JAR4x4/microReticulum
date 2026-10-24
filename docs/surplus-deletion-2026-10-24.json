@@ -1,0 +1,8 @@
+{
+  "status": "completed",
+  "targets": 117,
+  "logical_bytes": 2161645868,
+  "register_sha256": "2f55e773c5d47a0f9ce7af72a47c5579f2d03d6daaf59932ff1eaf9a7c88d442",
+  "firmware_changed": false,
+  "flash_or_restart": false
+}

@@ -111,3 +111,11 @@ Private evidence har tilgang begrenset til eieren; rå USB/EEPROM-materiale publ
 Filregister: archive/2026-10-24/file-structure/file-register.json. Registeret beskriver 88 operasjoner og 13 247 fil-/lenkeoppføringer, med kilde, mål, størrelse og SHA256 for vanlige filer, eller lenkemål for symlinker. Hver destinasjon er kontrollert mot kildens register etter operasjonen. Registeret og råfilene lagres lokalt; denne oversikten er den publiserte oppsummeringen.
 
 Reversering: følg archive/2026-10-24/file-structure/UNDO.md. Flytteoperasjoner reverseres i motsatt rekkefølge etter kontroll av registeret og at gammel sti er ledig. Kopier trenger ingen tilbakeflytting fordi originalene er beholdt. Ingen automatiske overskrivinger eller slettinger inngår. Dokumentasjonscommits er separate fra filflyttingene.
+
+## Senere autorisert sletting — 24. oktober 2026
+
+Etter den reversible flyttingen godkjente eier permanent sletting av overflødige filer, også gamle eksperimenter og rålogger. Tidligere avsnitt om fullstendige snapshots og reversering beskriver derfor tilstanden før denne slettingen og kan ikke brukes som løfte om at alle disse filene fortsatt finnes.
+
+Fjernet: registrerte avsluttede /tmp-eksperimenter og bygg (Pi-proxyen beholdt), evidence/private/2026-10-24/temporary-snapshots/, archive/2026-10-24/staging-checkouts/, archive/2026-10-24/stale-september-build/, RNode_Firmware/build/, en verifisert overflødig eldre microReticulum-bundle, samt gamle USB-raw/frames-, terminal- og EEPROM-rålogger i valgte chatmapper og deres bevarte kopier. Rapporter, oppsummerte målinger, kildehistorikk, arkivmerker og artifacts/ med stabile/tilbakeføringspakker er beholdt. Aktive repoer og gjenværende utviklingsgrener er uendret. Ingen radiotjeneste eller QD er endret.
+
+Sletteregister: archive/2026-10-24/deletion-audit/deleted-files.json. Det registrerer 117 slettemål og 2 161 645 868 byte logisk filinnhold (ca.2,16GB), med filnavn og SHA256 før sletting. Dette er ikke en måling av fysisk frigjorte diskblokker. Registeret er et revisjonsspor, ikke en sikkerhetskopi; slettede rålogger er ikke lenger tilgjengelige for full detaljanalyse. Oppsummerte testresultater består. Råregisteret holdes lokalt; bare sammendrag publiseres.
