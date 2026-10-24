@@ -1,0 +1,256 @@
+[
+  {
+    "environment": "embedded",
+    "status": "Shared base configuration; keep for inheritance",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "embedded-esp32",
+    "status": "Shared base configuration; keep for inheritance",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "embedded-esp32-minimal",
+    "status": "Shared base configuration; keep for inheritance",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "embedded-nrf52",
+    "status": "Shared base configuration; keep for inheritance",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "embedded-nrf52-minimal",
+    "status": "Shared base configuration; keep for inheritance",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "rnode-ng-20",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "rnode-ng-21",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-t-beam",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-t-beam-sx1262",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-t-beam-supreme",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "lilygo-t3-s3",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "lilygo-t3-s3-sx127x",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "lilygo-t3-s3-sx1280-pa",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "lilygo-t-deck",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-lora32-v1",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-lora32-v2",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-lora32-v2-extled",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-lora32-v21",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-lora32-v21-extled",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-lora32-v21-tcxo",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "heltec_wifi_lora_32_V2",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "heltec_wifi_lora_32_V2-extled",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "heltec_wifi_lora_32_V3",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "heltec_wifi_lora_32_V4",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "heltec-wireless-tracker-v2",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "heltec-wireless-tracker-v2-local",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "featheresp32",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "seeed_xiao_esp32s3",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "generic-esp32",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "wiscore_rak4631",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "wiscore_rak3401",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "lilygo-t-echo",
+    "status": "Other board/reference target; retain upstream history; not verified for current devices",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "ttgo-t-beam-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "ttgo-lora32-v21-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "ttgo-lora32-v21-sd-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "heltec_wifi_lora_32_V4-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "heltec_wifi_lora_32_V4-local-psram",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "heltec_wifi_lora_32_V4-local-psram-pioarduino",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "wiscore_rak4631-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore",
+      "/home/jar/UMBRAreticulum/firmware/Adafruit_SPIFlash"
+    ]
+  },
+  {
+    "environment": "wiscore_rak3401-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore",
+      "/home/jar/UMBRAreticulum/firmware/Adafruit_SPIFlash"
+    ]
+  },
+  {
+    "environment": "lilygo-t-echo-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "heltec_t114-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "native-macos-local",
+    "status": "Historical local/development target; missing sibling dependencies; not production-ready",
+    "missing_local_dependencies": [
+      "/home/jar/UMBRAreticulum/firmware/microStore"
+    ]
+  },
+  {
+    "environment": "native",
+    "status": "Optional host development; not QD firmware; not cross-built in this review",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "umbra_xiao_nrf52840",
+    "status": "Relevant parent environment; inherited by current QD target; not a separate installed image",
+    "missing_local_dependencies": []
+  },
+  {
+    "environment": "umbra_xiao_nrf52840_lockup_diag",
+    "status": "Current installed QD target; isolated cross-build PASS, exact stable HEX/BIN/DAT/manifest match",
+    "missing_local_dependencies": []
+  }
+]
