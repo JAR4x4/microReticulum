@@ -45,6 +45,8 @@ namespace RNS { namespace Utilities {
 		};
 
 		struct allocator_info {
+			uint32_t failed_count = 0;
+			size_t last_failed_size = 0;
 			uint32_t alloc_count = 0;
 			uint32_t alloc_fault = 0;
 			uint32_t free_count = 0;
@@ -114,14 +116,6 @@ namespace RNS { namespace Utilities {
 			T* allocate(std::size_t n) {
 				if (n == 0) return nullptr;
 				size_t size = n * sizeof(value_type);
-				++container_allocator_info.alloc_count;
-				container_allocator_info.alloc_size += size;
-				if (size < container_allocator_info.min_alloc_size || container_allocator_info.min_alloc_size == 0) {
-					container_allocator_info.min_alloc_size = size;
-				}
-				if (size > container_allocator_info.max_alloc_size) {
-					container_allocator_info.max_alloc_size = size;
-				}
 #if RNS_CONTAINER_ALLOCATOR == RNS_HEAP_POOL_ALLOCATOR
 				void* p = pool_malloc(heap_pool_info, size);
 #elif RNS_CONTAINER_ALLOCATOR == RNS_PSRAM_ALLOCATOR
@@ -148,8 +142,18 @@ namespace RNS { namespace Utilities {
 	#error "Unknown or invalid allocator."
 #endif
 				if (p == nullptr) {
+					++container_allocator_info.failed_count;
+					container_allocator_info.last_failed_size = size;
 					ERRORF("--- ContainerAllocator failed to allocate memory (%u bytes)", size);
 					throw std::bad_alloc();
+				}
+				++container_allocator_info.alloc_count;
+				container_allocator_info.alloc_size += size;
+				if (size < container_allocator_info.min_alloc_size || container_allocator_info.min_alloc_size == 0) {
+					container_allocator_info.min_alloc_size = size;
+				}
+				if (size > container_allocator_info.max_alloc_size) {
+					container_allocator_info.max_alloc_size = size;
 				}
 				//TRACEF("--- ContainerAllocator allocated memory (addr=%lx) (%u bytes)", p, size);
 				return static_cast<T*>(p);

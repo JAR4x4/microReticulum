@@ -24,6 +24,7 @@
 #include "Cryptography/Random.h"
 #include "Utilities/OS.h"
 #include "Utilities/Persistence.h"
+#include "Utilities/ScopedFlag.h"
 
 #if defined(RNS_ENABLE_REMOTE_PROVISIONING) && defined(RNS_USE_PROVISIONING)
 #include "Provisioning/Provisioning.h"
@@ -1172,7 +1173,7 @@ TRACEF("path_request_conditions=%u", path_request_conditions);
 		//TRACE("Transport::outbound: sleeping...");
 		OS::sleep(0.0005);
 	}
-	_jobs_locked = true;
+	ScopedFlag jobs_lock(_jobs_locked);
 
 	bool sent = false;
 	double outbound_time = OS::time();
@@ -1525,7 +1526,6 @@ TRACEF("path_request_conditions=%u", path_request_conditions);
 		cache_packet(packet);
 	}
 
-	_jobs_locked = false;
 	return sent;
 }
 
@@ -1785,7 +1785,7 @@ TRACEF("path_request_conditions=%u", path_request_conditions);
 		return;
 	}
 
-	_jobs_locked = true;
+	ScopedFlag jobs_lock(_jobs_locked);
 
 	Packet packet(Destination(Type::NONE), raw);
 	if (!packet.unpack()) {
@@ -1881,7 +1881,9 @@ TRACEF("path_request_conditions=%u", path_request_conditions);
 			// CBA microStore
 			//auto& destination_entry = get_path(packet.destination_hash());
 			DestinationEntry destination_entry;
-			_new_path_table.get(packet.destination_hash(), destination_entry);
+			if (_new_path_table.exists(packet.destination_hash())) {
+				_new_path_table.get(packet.destination_hash(), destination_entry);
+			}
 			if (destination_entry) {
 			 	if (destination_entry._hops == 0) {
 					// Destined for a local destination
@@ -3039,7 +3041,6 @@ TRACEF("path_announce_emitted=%lu", path_announce_emitted);
 		}
 	}
 
-	_jobs_locked = false;
 }
 
 /*static*/ void Transport::synthesize_tunnel(const Interface& interface) {

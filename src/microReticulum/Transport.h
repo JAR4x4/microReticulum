@@ -77,6 +77,7 @@ namespace RNS {
     Transport system of Reticulum.
     */
 	class Transport {
+		friend struct TransportTestAccess;
 
 	public:
 
