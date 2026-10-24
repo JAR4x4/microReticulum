@@ -13,6 +13,7 @@
  */
 
 #include "Destination.h"
+#include "Utilities/ScopedCounter.h"
 
 #include "Transport.h"
 #include "Interface.h"
@@ -425,9 +426,39 @@ void Destination::receive(const Packet& packet) {
 	}
 }
 
+void Destination::incoming_link_limit(size_t limit) {
+	assert(_object); _object->_incoming_link_limit = limit;
+}
+size_t Destination::incoming_link_limit() const {
+	assert(_object); return _object->_incoming_link_limit;
+}
+size_t Destination::incoming_link_count() const {
+	assert(_object);
+	size_t count = _object->_incoming_link_reservations;
+	for (const Link& link : _object->_links)
+		if (link && link.status() != Type::Link::CLOSED) ++count;
+	return count;
+}
+bool Destination::can_accept_incoming_link() const {
+	assert(_object);
+	return _object->_accept_link_requests &&
+		(_object->_incoming_link_limit == 0 || incoming_link_count() < _object->_incoming_link_limit);
+}
+uint32_t Destination::incoming_link_rejections() const {
+	assert(_object); return _object->_incoming_link_rejections;
+}
+
 void Destination::incoming_link_request(const Bytes& data, const Packet& packet) {
 	assert(_object);
 	if (_object->_accept_link_requests) {
+		// Reject before key exchange, LinkData construction or proof generation.
+		// No queue, snapshots, payload copies or formatting allocations here.
+		if (!can_accept_incoming_link()) {
+			++_object->_incoming_link_rejections;
+			return;
+		}
+		// Radio waits can re-enter loop(); reserve capacity before validation.
+		Utilities::ScopedCounter reservation(_object->_incoming_link_reservations);
 TRACE("***** Accepting link request");
 		RNS::Link link = Link::validate_request(*this, data, packet);
 		if (link) {

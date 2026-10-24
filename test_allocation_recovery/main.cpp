@@ -1,9 +1,16 @@
 #include "microReticulum.h"
 #include "microReticulum/Utilities/ScopedFlag.h"
+#include "microReticulum/LinkData.h"
+#include "microReticulum/Utilities/ScopedCounter.h"
 #include <cassert>
 #include <cstdio>
 #include <new>
 namespace RNS {
+struct DestinationAdmissionTestAccess {
+ static void track(Destination& d, const Link& l) { d._object->_links.insert(l); }
+ static size_t& reservations(Destination& d) { return d._object->_incoming_link_reservations; }
+ static void clear(Destination& d) { d._object->_links.clear(); }
+};
 struct TransportTestAccess {
  static bool locked() { return Transport::_jobs_locked; }
  static void identity() { Transport::_identity = Identity(); }
@@ -31,6 +38,52 @@ class DummyInterface : public RNS::InterfaceImpl {
 public: DummyInterface(): InterfaceImpl("fault-injection") {}
  bool send_outgoing(const RNS::Bytes&) override { return true; }
 };
+class TestIncomingLink : public RNS::Link {
+public:
+ explicit TestIncomingLink(RNS::Type::Link::status state) : Link(RNS::Type::NONE) {
+  _object.reset(new RNS::LinkData(RNS::Destination(RNS::Type::NONE)));
+  status(state);
+ }
+};
+static void test_destination_admission() {
+ using namespace RNS;
+ Identity identity;
+ Destination site(identity,Type::Destination::IN,Type::Destination::SINGLE,"admission-test","node");
+ Destination management(identity,Type::Destination::IN,Type::Destination::SINGLE,"admission-test","management");
+ TestIncomingLink pending(Type::Link::PENDING), active(Type::Link::ACTIVE);
+ DestinationAdmissionTestAccess::track(site,pending);
+ DestinationAdmissionTestAccess::track(site,active);
+ assert(site.incoming_link_limit()==0 && site.can_accept_incoming_link());
+ site.incoming_link_limit(2);
+ assert(site.incoming_link_count()==2 && !site.can_accept_incoming_link());
+ assert(management.can_accept_incoming_link());
+ Packet unused(Type::NONE); Bytes empty;
+ fail_after=0; // Any operator-new call in admission would fail this test.
+ for(int i=0;i<1000;++i) site.incoming_link_request(empty,unused);
+ assert(fail_after==0); fail_after=-1;
+ assert(site.incoming_link_rejections()==1000);
+ assert(site.incoming_link_count()==2);
+ pending.status(Type::Link::STALE);
+ assert(!site.can_accept_incoming_link());
+ pending.status(Type::Link::CLOSED);
+ assert(site.incoming_link_count()==1 && site.can_accept_incoming_link());
+ site.incoming_link_limit(1); assert(!site.can_accept_incoming_link());
+ site.remove_link(active); assert(site.can_accept_incoming_link());
+ try {
+  Utilities::ScopedCounter reservation(DestinationAdmissionTestAccess::reservations(site));
+  assert(!site.can_accept_incoming_link());
+  fail_after=0;
+  site.incoming_link_request(empty,unused); // Nested attempt cannot pass the reserved slot.
+  assert(fail_after==0); fail_after=-1;
+  throw std::bad_alloc();
+ } catch(const std::bad_alloc&) {}
+ assert(site.incoming_link_count()==0 && site.can_accept_incoming_link());
+ assert(site.incoming_link_rejections()==1001);
+ site.accepts_links(false); assert(!site.can_accept_incoming_link());
+ site.accepts_links(true); site.incoming_link_limit(0); assert(site.can_accept_incoming_link());
+ DestinationAdmissionTestAccess::clear(site);
+ std::puts("PASS: bounded destination links, pending/stale counting, slot recovery, management isolation,1001 allocation-free rejections and exception-safe reservations");
+}
 int main() {
  using namespace RNS;
  using Utilities::ScopedFlag;
@@ -40,6 +93,7 @@ int main() {
  assert(!flag);
  // Real inbound early return after setting the flag (malformed packet).
  TransportTestAccess::identity();
+ test_destination_admission();
  Interface incoming(new DummyInterface());
  Bytes malformed("x");
  Transport::inbound(malformed, incoming);
