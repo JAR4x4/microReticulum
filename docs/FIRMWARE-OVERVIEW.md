@@ -37,7 +37,7 @@ To cachefrie NomadNet-stressrunder og nattlogging har vist opprydding av ekstra 
 - Transport Node: port/xiao-nrf52840 ved1bd8a68, lokal historisk gren med fire egne commits. Beholdes; ikke produksjonsreferanse og ikke klar for fletting.
 - microReticulum: GitHub-grenene base64,csma,log-opt,path_healing,provision_opt,tcp_announce har egne eksperimentendringer og er beholdt. Ingen av dem er del av installert QD-referanse.
 
-RNode_Firmware_upstream (markqvist,d39339f) og RNode_Firmware_CE (liberatedsystems,df2cfe1) er separate lokale referansekopier. CE-commitens melding sier «Unresolved merge conflict - fix later»; Git-ren mappe betyr ikke verifisert firmware. Referansekopiene og tredjeparts remote-grener er ikke ryddet bort.
+references/RNode_Firmware_upstream (markqvist,d39339f) og references/RNode_Firmware_CE (liberatedsystems,df2cfe1) er separate lokale referansekopier. CE-commitens melding sier «Unresolved merge conflict - fix later»; Git-ren mappe betyr ikke verifisert firmware. Referansekopiene og tredjeparts remote-grener er ikke ryddet bort.
 
 ## Arkivmerker og historikk
 
@@ -90,3 +90,24 @@ De fire gamle Transport Node/microReticulum-PR-ene er lukket som erstattet: innh
 QD: registrert canonical BIN-hash og enhetens beregnede hash avviker fortsatt, som før oppdateringen; dette er ikke løst. Overlappende ressursforespørsler kan avvises uten BUSY-pakke og gi klienttimeout. Firmware rapporterer ikke oppetid eller oppstartsårsak. Upload-hooken kan utføre provisioning; fremtidig QD-flashing må fortsatt følge kontrollert applikasjons-DFU og README-hashprosedyre med bevart identitet.
 
 Denne oversikten er dokumentasjon av kildeversjoner, arkiv og observerte tester; ingen garanti for alle belastninger. Dokumentasjonsoppdateringen endrer ikke firmware, biblioteklås, innstillinger eller tjenester.
+
+## Reversibel filopprydding — nye stier
+
+De tre aktive repoene står uendret under /home/jar/UMBRAreticulum/firmware/: RNode_Firmware/, UMBRA_Transport_Node/ og microReticulum/. Relative byggeverktøystier mellom dem er beholdt.
+
+| Tidligere sti under firmware/ | Ny sti under firmware/ | Operasjon |
+|---|---|---|
+| RNode_Firmware_upstream/ | references/RNode_Firmware_upstream/ | Flyttet, innhold verifisert |
+| RNode_Firmware_CE/ | references/RNode_Firmware_CE/ | Flyttet, innhold verifisert |
+| analysis/ | evidence/analysis/ | Flyttet |
+| xiao-port-analysis/ | evidence/xiao-port-analysis/ | Flyttet |
+| build-logs/ | evidence/build-logs/ | Flyttet |
+| Løse *.txt-analyser | evidence/legacy-analysis/ | Flyttet |
+
+Relevant test- og firmwaremateriale fra chatens arbeidsmappe er kopiert til evidence/private/2026-10-24/chat-evidence/. Synkroniserte sources/ og Console-kildekode er ikke flyttet eller endret. Kjente midlertidige qd-/umbra-bygg og RNode-reproduksjonsbygget er kopiert fra /tmp til evidence/private/2026-10-24/temporary-snapshots/. Alle disse originalene er beholdt; kopiene er historiske snapshots, ikke aktive byggerepoer. Midlertidige originale symlinker er bevart som lenker, og lenkemål er registrert. Avhengigheter som ligger utenfor snapshotet er ikke automatisk innlemmet.
+
+Private evidence har tilgang begrenset til eieren; rå USB/EEPROM-materiale publiseres ikke på GitHub. Verifiserte flashpakker ligger fortsatt i artifacts/. QD-pakkens historiske «unflashed»-filnavn er beholdt, mens installasjonsstatus er forklart i denne oversikten. Ingen kilde-/firmwarepakker er slettet. Ingen diskplassbesparelse hevdes ved kopiering.
+
+Filregister: archive/2026-10-24/file-structure/file-register.json. Registeret beskriver 88 operasjoner og 13 247 fil-/lenkeoppføringer, med kilde, mål, størrelse og SHA256 for vanlige filer, eller lenkemål for symlinker. Hver destinasjon er kontrollert mot kildens register etter operasjonen. Registeret og råfilene lagres lokalt; denne oversikten er den publiserte oppsummeringen.
+
+Reversering: følg archive/2026-10-24/file-structure/UNDO.md. Flytteoperasjoner reverseres i motsatt rekkefølge etter kontroll av registeret og at gammel sti er ledig. Kopier trenger ingen tilbakeflytting fordi originalene er beholdt. Ingen automatiske overskrivinger eller slettinger inngår. Dokumentasjonscommits er separate fra filflyttingene.
