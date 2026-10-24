@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "microReticulum",
+    "branch": "fix/qd-nomadnet-memory-cleanup",
+    "sha": "d3b0d311f1ec1c25e5dbf6130953711c27d0d34c",
+    "tag": "archive/2026-10-24/fix/qd-nomadnet-memory-cleanup",
+    "local_removed": true,
+    "remote_removed": true
+  },
+  {
+    "repo": "microReticulum",
+    "branch": "fix/qd-rapid-response-admission",
+    "sha": "9ce2fbaaa1335b2d8f16050195233cd6ee414c86",
+    "tag": "archive/2026-10-24/fix/qd-rapid-response-admission",
+    "local_removed": true,
+    "remote_removed": true
+  },
+  {
+    "repo": "microReticulum",
+    "branch": "baseline/qd-2026-09-20",
+    "sha": "40fa628809d57140180c1c833559ab96fec992c1",
+    "tag": "archive/2026-10-24/baseline/qd-2026-09-20",
+    "local_removed": false,
+    "remote_removed": true
+  },
+  {
+    "repo": "microReticulum",
+    "branch": "bytes_allocator",
+    "sha": "4a5e72e4a74d9117ce401e7057a58dfc51bc40cd",
+    "tag": "archive/2026-10-24/bytes_allocator",
+    "local_removed": false,
+    "remote_removed": true
+  }
+]
